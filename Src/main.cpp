@@ -69,7 +69,7 @@ static void MX_GPIO_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	Model::Button button;
+	Model::Button button(GPIOA, GPIO_PIN_7);
 
   /* USER CODE END 1 */
   

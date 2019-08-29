@@ -9,8 +9,9 @@
 
 namespace Model {
 
-Button::Button() {
-	// TODO Auto-generated constructor stub
+Button::Button(GPIO_TypeDef *type, unsigned short int pin) {
+	_GPIO_Type = *type;
+	_GPIO_Pin = pin;
 
 }
 
