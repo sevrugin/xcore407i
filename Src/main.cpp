@@ -25,6 +25,8 @@
 /* USER CODE BEGIN Includes */
 #include "defines.h"
 
+#include "Model/Button.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -67,6 +69,7 @@ static void MX_GPIO_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	Model::Button button;
 
   /* USER CODE END 1 */
   
