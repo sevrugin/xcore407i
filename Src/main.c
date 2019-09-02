@@ -236,8 +236,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	    int i = 0;
 
-	    print(&rxBuffer); // Echo the character that caused this callback so the user can see what they are typing
-
 	    if (rxBuffer == 8 || rxBuffer == 127) // If Backspace or del
 	    {
 	        print(" \b"); // "\b space \b" clears the terminal character. Remember we just echoced a \b so don't need another one here, just space and \b
@@ -247,15 +245,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	    else if (rxBuffer == '\n' || rxBuffer == '\r') // If Enter
 	    {
-	    	print("\r\n");
 	        executeSerialCommand(rxString);
 	        rxString[rxindex] = 0;
 	        rxindex = 0;
-	        for (i = 0; i < MAXCLISTRING; i++) rxString[i] = 0; // Clear the string buffer
+	        for (int i = 0; i < MAXCLISTRING; i++) {
+	        	rxString[i] = 0; // Clear the string buffer
+	        }
 	    }
 
 	    else
 	    {
+	    	print(&rxBuffer); // Echo the character that caused this callback so the user can see what they are typing
+
 	        rxString[rxindex] = rxBuffer; // Add that character to the string
 	        rxindex++;
 	        if (rxindex > MAXCLISTRING) // User typing too much, we can't have commands that big
@@ -267,14 +268,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	    }
 }
 
-void print(uint8_t str) {
-	HAL_UART_Transmit_IT(&huart3, (uint8_t*)str, sizeof(str));
+void print(uint8_t *str) {
+	size_t ia;
+	ia = strlen(str);
+
+	HAL_UART_Transmit(&huart3, (uint8_t*)str, ia, 0xFFFF);
 }
 
-void executeSerialCommand(uint8_t command) {
-	HAL_UART_Transmit_IT(&huart3, (uint8_t*)"Command ", 8);
-	HAL_UART_Transmit_IT(&huart3, (uint8_t*)command, sizeof(command));
-	HAL_UART_Transmit_IT(&huart3, (uint8_t*)"\r\n", 2);
+void executeSerialCommand(uint8_t *command) {
+	print("Command ");
+	print((uint8_t*)command);
+	print("\r\n");
 }
 /* USER CODE END 4 */
 
