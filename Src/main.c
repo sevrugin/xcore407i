@@ -48,6 +48,10 @@
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
+#define MAXCLISTRING 200
+uint8_t rxBuffer; // where we store that one character that just came in
+uint8_t rxString[MAXCLISTRING]; // where we build our string from characters coming in
+int rxindex = 0; // index for going though rxString
 
 /* USER CODE END PV */
 
@@ -61,6 +65,7 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 
 /* USER CODE END 0 */
 
@@ -98,17 +103,23 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_UART_Transmit_IT(&huart3, (uint8_t*)str, 16);
+  __HAL_UART_FLUSH_DRREGISTER(&huart3);
+  HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_UART_Transmit_IT(&huart3, (uint8_t*)str, 16);
-
-	  HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
-	  HAL_Delay(100);
+//	  HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
+//	  HAL_Delay(500);
+	  if(huart3.RxXferCount == 0)
+	  {
+		  HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
+//		  aRxBuffer[20] = 0;
+		  HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -219,7 +230,52 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+	__HAL_UART_FLUSH_DRREGISTER(&huart3); // Clear the buffer to prevent overrun
 
+	    int i = 0;
+
+	    print(&rxBuffer); // Echo the character that caused this callback so the user can see what they are typing
+
+	    if (rxBuffer == 8 || rxBuffer == 127) // If Backspace or del
+	    {
+	        print(" \b"); // "\b space \b" clears the terminal character. Remember we just echoced a \b so don't need another one here, just space and \b
+	        rxindex--;
+	        if (rxindex < 0) rxindex = 0;
+	    }
+
+	    else if (rxBuffer == '\n' || rxBuffer == '\r') // If Enter
+	    {
+	    	print("\r\n");
+	        executeSerialCommand(rxString);
+	        rxString[rxindex] = 0;
+	        rxindex = 0;
+	        for (i = 0; i < MAXCLISTRING; i++) rxString[i] = 0; // Clear the string buffer
+	    }
+
+	    else
+	    {
+	        rxString[rxindex] = rxBuffer; // Add that character to the string
+	        rxindex++;
+	        if (rxindex > MAXCLISTRING) // User typing too much, we can't have commands that big
+	        {
+	            rxindex = 0;
+	            for (i = 0; i < MAXCLISTRING; i++) rxString[i] = 0; // Clear the string buffer
+	            print("\r\nConsole> ");
+	        }
+	    }
+}
+
+void print(uint8_t str) {
+	HAL_UART_Transmit_IT(&huart3, (uint8_t*)str, sizeof(str));
+}
+
+void executeSerialCommand(uint8_t command) {
+	HAL_UART_Transmit_IT(&huart3, (uint8_t*)"Command ", 8);
+	HAL_UART_Transmit_IT(&huart3, (uint8_t*)command, sizeof(command));
+	HAL_UART_Transmit_IT(&huart3, (uint8_t*)"\r\n", 2);
+}
 /* USER CODE END 4 */
 
 /**
