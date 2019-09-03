@@ -26,7 +26,7 @@ void *runHelp(Command *self)
 			print(commands[i].name);
 			print(" - ");
 			print(commands[i].description);
-			print("\r\n");
+			print("\n\r");
 		}
 	} else {
 		int isset = 0;
@@ -36,11 +36,11 @@ void *runHelp(Command *self)
 				print(commands[i].name);
 				print(" - ");
 				print(commands[i].description);
-				print("\r\n");
+				print("\n\r");
 			}
 		}
 		if (0 == isset) {
-			print("Command not found\r\n");
+			print("Command not found\n\r");
 		}
 	}
 }
@@ -49,7 +49,7 @@ void *runVersion()
 {
 	print("Firmware version: ");
 	print(getFwVersion());
-	print("\r\n");
+	print("\n\r");
 }
 
 void executeSerialCommand(char *str)
@@ -57,15 +57,20 @@ void executeSerialCommand(char *str)
 	char *token;
 	token = strtok(str, " ");
 
+	int isset = 0;
 	for (int i = 0; i < NKEYS; i++) {
 		if (strcmp(token, commands[i].name) == 0) {
-			print(token);
-			print(" OK\r\n");
+			isset = 1;
+			// print(token);
+			// print(" OK\r\n");
 			if (NULL != commands[i].run) {
 				commands[i].run();
 			}
 			break;
 		}
+	}
+	if (0 == isset) {
+		print("Command not found\n\r");
 	}
 }
 

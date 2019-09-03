@@ -81,8 +81,6 @@ int main(void)
   /* USER CODE BEGIN 1 */
 //	Model::Button button(GPIOA, GPIO_PIN_7);
 
-	uint8_t str[]= "USART Transmit\r\n";
-
   /* USER CODE END 1 */
   
 
@@ -106,7 +104,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_UART_Transmit(&huart3, (uint8_t*)str, 16, 0xffff);
+  print("\n\r# > ");
   __HAL_UART_FLUSH_DRREGISTER(&huart3);
   HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
   /* USER CODE END 2 */
@@ -238,35 +236,28 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	int i = 0;
 
-	if (rxBuffer == 8 || rxBuffer == 127) // If Backspace or del
-	{
+	if (rxBuffer == 8 || rxBuffer == 127) { // If Backspace or del
 		print(" \b"); // "\b space \b" clears the terminal character. Remember we just echoced a \b so don't need another one here, just space and \b
 		rxindex--;
 		if (rxindex < 0) rxindex = 0;
-	}
-
-	else if (rxBuffer == '\n' || rxBuffer == '\r') // If Enter
-	{
-		print("\r\n");
+	} else if (rxBuffer == '\n' || rxBuffer == '\r') { // If Enter
+		print("\n\r");
 		executeSerialCommand(rxString);
 		rxString[rxindex] = 0;
 		rxindex = 0;
 		for (int i = 0; i < MAXCLISTRING; i++) {
 			rxString[i] = 0; // Clear the string buffer
 		}
-	}
-
-	else
-	{
+		print("\n\r# > ");
+	} else {
 		print(&rxBuffer); // Echo the character that caused this callback so the user can see what they are typing
 
 		rxString[rxindex] = rxBuffer; // Add that character to the string
 		rxindex++;
-		if (rxindex > MAXCLISTRING) // User typing too much, we can't have commands that big
-		{
+		if (rxindex > MAXCLISTRING) { // User typing too much, we can't have commands that big
 			rxindex = 0;
 			for (i = 0; i < MAXCLISTRING; i++) rxString[i] = 0; // Clear the string buffer
-			print("\r\nConsole> ");
+			print("\n\r# > ");
 		}
 	}
 }
@@ -306,7 +297,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 { 
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     tex: printf("Wrong parameters value: file %s on line %d\n\r", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
