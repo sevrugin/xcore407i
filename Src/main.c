@@ -242,7 +242,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		if (rxindex < 0) rxindex = 0;
 	} else if (rxBuffer == '\n' || rxBuffer == '\r') { // If Enter
 		print("\n\r");
-		executeSerialCommand(rxString);
+		SR_execCommand(rxString);
 		rxString[rxindex] = 0;
 		rxindex = 0;
 		for (int i = 0; i < MAXCLISTRING; i++) {
