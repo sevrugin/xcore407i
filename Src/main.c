@@ -27,6 +27,7 @@
 /* USER CODE BEGIN Includes */
 #include "defines.h"
 #include "serial.h"
+#include "gpios.h"
 
 //#include "Model/Button.h"
 
