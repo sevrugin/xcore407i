@@ -19,11 +19,14 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
+#define FW_VERSION "v0.0.1"
+
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "defines.h"
+#include "serial.h"
 
 //#include "Model/Button.h"
 
@@ -36,7 +39,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-char *nextWord(char *str);
 
 /* USER CODE END PD */
 
@@ -104,7 +106,7 @@ int main(void)
   MX_GPIO_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_UART_Transmit_IT(&huart3, (uint8_t*)str, 16);
+  HAL_UART_Transmit(&huart3, (uint8_t*)str, 16, 0xffff);
   __HAL_UART_FLUSH_DRREGISTER(&huart3);
   HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
   /* USER CODE END 2 */
@@ -274,28 +276,10 @@ void print(char *str)
 	HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), 0xFFFF);
 }
 
-#include <ctype.h>
-#include <string.h>
-
-void executeSerialCommand(char *str)
+char *getFwVersion()
 {
-	char *token;
-
-	token = strtok(str, " ");
-	if (strcmp(token, "list") == 0) {
-		print("LIST\r\n");
-	} else if (strcmp(token, "help") == 0) {
-		print("HELP\r\n");
-	} else {
-		print("ERR\r\n");
-	}
-
-	token = strtok(NULL, " ");
-	print("next=");
-	print((uint8_t*)token);
-	print("\r\n");
+	return FW_VERSION;
 }
-
 /* USER CODE END 4 */
 
 /**
