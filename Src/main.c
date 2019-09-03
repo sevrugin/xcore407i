@@ -36,6 +36,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+char *nextWord(char *str);
 
 /* USER CODE END PD */
 
@@ -117,7 +118,6 @@ int main(void)
 	  if(huart3.RxXferCount == 0)
 	  {
 		  HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
-//		  aRxBuffer[20] = 0;
 		  HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
 	  }
     /* USER CODE END WHILE */
@@ -234,52 +234,68 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	__HAL_UART_FLUSH_DRREGISTER(&huart3); // Clear the buffer to prevent overrun
 
-	    int i = 0;
+	int i = 0;
 
-	    if (rxBuffer == 8 || rxBuffer == 127) // If Backspace or del
-	    {
-	        print(" \b"); // "\b space \b" clears the terminal character. Remember we just echoced a \b so don't need another one here, just space and \b
-	        rxindex--;
-	        if (rxindex < 0) rxindex = 0;
-	    }
+	if (rxBuffer == 8 || rxBuffer == 127) // If Backspace or del
+	{
+		print(" \b"); // "\b space \b" clears the terminal character. Remember we just echoced a \b so don't need another one here, just space and \b
+		rxindex--;
+		if (rxindex < 0) rxindex = 0;
+	}
 
-	    else if (rxBuffer == '\n' || rxBuffer == '\r') // If Enter
-	    {
-	        executeSerialCommand(rxString);
-	        rxString[rxindex] = 0;
-	        rxindex = 0;
-	        for (int i = 0; i < MAXCLISTRING; i++) {
-	        	rxString[i] = 0; // Clear the string buffer
-	        }
-	    }
+	else if (rxBuffer == '\n' || rxBuffer == '\r') // If Enter
+	{
+		print("\r\n");
+		executeSerialCommand(rxString);
+		rxString[rxindex] = 0;
+		rxindex = 0;
+		for (int i = 0; i < MAXCLISTRING; i++) {
+			rxString[i] = 0; // Clear the string buffer
+		}
+	}
 
-	    else
-	    {
-	    	print(&rxBuffer); // Echo the character that caused this callback so the user can see what they are typing
+	else
+	{
+		print(&rxBuffer); // Echo the character that caused this callback so the user can see what they are typing
 
-	        rxString[rxindex] = rxBuffer; // Add that character to the string
-	        rxindex++;
-	        if (rxindex > MAXCLISTRING) // User typing too much, we can't have commands that big
-	        {
-	            rxindex = 0;
-	            for (i = 0; i < MAXCLISTRING; i++) rxString[i] = 0; // Clear the string buffer
-	            print("\r\nConsole> ");
-	        }
-	    }
+		rxString[rxindex] = rxBuffer; // Add that character to the string
+		rxindex++;
+		if (rxindex > MAXCLISTRING) // User typing too much, we can't have commands that big
+		{
+			rxindex = 0;
+			for (i = 0; i < MAXCLISTRING; i++) rxString[i] = 0; // Clear the string buffer
+			print("\r\nConsole> ");
+		}
+	}
 }
 
-void print(uint8_t *str) {
-	size_t ia;
-	ia = strlen(str);
-
-	HAL_UART_Transmit(&huart3, (uint8_t*)str, ia, 0xFFFF);
+void print(char *str)
+{
+	HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), 0xFFFF);
 }
 
-void executeSerialCommand(uint8_t *command) {
-	print("Command ");
-	print((uint8_t*)command);
+#include <ctype.h>
+#include <string.h>
+
+void executeSerialCommand(char *str)
+{
+	char *token;
+
+	token = strtok(str, " ");
+	if (strcmp(token, "list") == 0) {
+		print("LIST\r\n");
+	} else if (strcmp(token, "help") == 0) {
+		print("HELP\r\n");
+	} else {
+		print("ERR\r\n");
+	}
+
+	token = strtok(NULL, " ");
+	print("next=");
+	print((uint8_t*)token);
 	print("\r\n");
 }
+
 /* USER CODE END 4 */
 
 /**
