@@ -29,6 +29,8 @@
 #include "serial.h"
 #include "gpios.h"
 
+#include "config.h"
+
 //#include "Model/Button.h"
 
 /* USER CODE END Includes */
@@ -103,6 +105,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  PR_GPIOs_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   print("\n\r# > ");
@@ -118,7 +121,8 @@ int main(void)
 //	  HAL_Delay(500);
 	  if(huart3.RxXferCount == 0)
 	  {
-		  HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
+		  tolog(".");
+		  // HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
 		  HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
 	  }
     /* USER CODE END WHILE */
@@ -237,10 +241,41 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 	int i = 0;
 
-	if (rxBuffer == 8 || rxBuffer == 127) { // If Backspace or del
-		print(" \b"); // "\b space \b" clears the terminal character. Remember we just echoced a \b so don't need another one here, just space and \b
+	if (rxBuffer == '\003'){ // Ctrl+C
+		SR_setSerialStatus(UART_STATUS_INPUT);
+		rxindex = 0;
+		for (i = 0; i < MAXCLISTRING; i++) rxString[i] = 0; // Clear the string buffer
+		print("\n\r# > ");
+	} else if (SR_getSerialStatus() == UART_STATUS_LOGS) {
+		// do nothing
+	} else if (rxBuffer == '\e') { // Waiting an arrow
+		SR_setSerialStatus(UART_STATUS_ARROW);
+	} else if (SR_getSerialStatus() == UART_STATUS_ARROW) {
+		if (rxBuffer != '[') {
+			switch (rxBuffer) {
+				case 'A':
+					// code for arrow up
+					break;
+				case 'B':
+					// code for arrow down
+					break;
+				case 'C':
+					// code for arrow right
+					break;
+				case 'D':
+					// code for arrow left
+					break;
+			}
+			SR_setSerialStatus(UART_STATUS_INPUT);
+		}
+	} else if (rxBuffer == 8 || rxBuffer == 127) { // If Backspace or del
 		rxindex--;
-		if (rxindex < 0) rxindex = 0;
+		if (rxindex < 0) {
+			rxindex = 0;
+		} else {
+			print("\b \b"); // "\b space \b" clears the terminal character. Remember we just echoced a \b so don't need another one here, just space and \b
+		}
+		rxString[rxindex] = 0;
 	} else if (rxBuffer == '\n' || rxBuffer == '\r') { // If Enter
 		print("\n\r");
 		SR_execCommand(rxString);
@@ -249,8 +284,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		for (int i = 0; i < MAXCLISTRING; i++) {
 			rxString[i] = 0; // Clear the string buffer
 		}
-		print("\n\r# > ");
-	} else {
+		if (SR_getSerialStatus() != UART_STATUS_LOGS) {
+			print("\n\r# > ");
+		}
+	} else if (isprint(rxBuffer)){
 		print(&rxBuffer); // Echo the character that caused this callback so the user can see what they are typing
 
 		rxString[rxindex] = rxBuffer; // Add that character to the string
@@ -266,6 +303,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 void print(char *str)
 {
 	HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), 0xFFFF);
+}
+
+void tolog(char *str)
+{
+	if (SR_getSerialStatus() == UART_STATUS_LOGS) {
+		print(str);
+	}
 }
 
 char *getFwVersion()
