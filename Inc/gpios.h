@@ -17,6 +17,13 @@ typedef enum {
 	TYPE_GPIOI=9
 } t_GPIO_TYPE;
 
+typedef enum {
+	PR_GPIO_MODE_INPUT,
+	PR_GPIO_MODE_OUTPUT,
+	PR_GPIO_MODE_ALTERNATIVE,
+	PR_GPIO_MODE_ANALOG
+} t_GPIO_MODE;
+
 #ifndef GPIO_PIN_0
 #define GPIO_PIN_0		((uint16_t)0x0001)
 #define GPIO_PIN_1		((uint16_t)0x0002)
