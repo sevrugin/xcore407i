@@ -19,7 +19,7 @@ void SR_setSerialStatus(int status);
 
 t_Command commands[] = {
 		{name: "gpios", description: "Show list of exists GPIO pins", run: &SR_runGpios},
-		{name: "gpio", description: "Set or read GPIO status", run: &SR_runGpio},
+		{name: "gpio", description: "Working with current PIN (on/off/toggle/read/mode)", run: &SR_runGpio},
 		{name: "logs", description: "Switch to the 'logs' mode", run: &SR_runLogs},
 		{name: "help", description: "Show help message", run: &SR_runHelp},
 		{name: "version", description: "Show firmware version", run: &SR_runVersion},
@@ -93,6 +93,15 @@ void *SR_runGpio()
 		int state = PR_getGPIOvalue(GPIOx, gpio->pin) == GPIO_PIN_SET? 1: 0;
 		print(state);
 		print("\n\r");
+	} else if (strcmp(token, "mode") == 0) {
+		char *mode = strcmp(token, "mode");
+		if (strcmp(mode, 'input') == 0) {
+			PR_GPIO_SetMode(gpio, TM_GPIO_Mode_IN);
+		} else if (strcmp(mode, 'output') == 0) {
+			PR_GPIO_SetMode(gpio, TM_GPIO_Mode_OUT);
+		} else {
+			print("To switch pin mode use (input/output)\n\r");
+		}
 	} else {
 		print("Command '");
 		print(token);
@@ -172,7 +181,7 @@ void _printGPIOInfo(t_GPIO *GPIO)
 {
 	uint16_t gpio;
 	GPIO_TypeDef *GPIOx;
-	t_GPIO_MODE mode;
+	TM_GPIO_Mode_t mode;
 
 	gpio = 1 << GPIO->pin;
 	GPIOx = PR_Init_CLK(GPIO->type);
@@ -182,18 +191,18 @@ void _printGPIOInfo(t_GPIO *GPIO)
 
 	GPIO_PinState value;
 	switch (mode) {
-		case PR_GPIO_MODE_INPUT:
+		case TM_GPIO_Mode_IN:
 			print("INPUT\t");
 			print(PR_getGPIOvalue(GPIOx, GPIO->pin) == GPIO_PIN_SET? "ON": "OFF");
 			break;
-		case PR_GPIO_MODE_OUTPUT:
+		case TM_GPIO_Mode_OUT:
 			print("OUTPUT\t");
 			print(PR_getGPIOvalue(GPIOx, GPIO->pin) == GPIO_PIN_SET? "ON": "OFF");
 			break;
-		case PR_GPIO_MODE_ANALOG:
+		case TM_GPIO_Mode_AN:
 			print("ANALOG\t");
 			break;
-		case PR_GPIO_MODE_ALTERNATIVE:
+		case TM_GPIO_Mode_AF:
 			print("ALTERNATIVE\t");
 			break;
 		defualt:

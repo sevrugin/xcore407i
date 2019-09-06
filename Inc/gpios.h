@@ -1,9 +1,14 @@
 #ifndef __GPIOS_H
 #define __GPIOS_H
 
-#include "stm32f407xx.h"
-#include "stm32f4xx_hal.h"
+//#include <ctype.h>
+//#include <string.h>
+//#include <stddef.h>
+
+//#include "stm32f407xx.h"
+//#include "stm32f4xx_hal.h"
 //#include "stm32f4xx_hal_gpio.h"
+#include "tm_stm32_gpio.h"
 
 typedef enum {
 	TYPE_GPIOA=1,
@@ -17,17 +22,10 @@ typedef enum {
 	TYPE_GPIOI=9
 } t_GPIO_TYPE;
 
-typedef enum {
-	PR_GPIO_MODE_INPUT = 0U,
-	PR_GPIO_MODE_OUTPUT = 1U,
-	PR_GPIO_MODE_ALTERNATIVE = 2U,
-	PR_GPIO_MODE_ANALOG = 3U
-} t_GPIO_MODE;
-
 typedef struct t_GPIO {
 	char *name;
 	t_GPIO_TYPE type;
-	uint8_t pin;
+	uint16_t pin;
 } t_GPIO;
 
 #endif

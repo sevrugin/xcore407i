@@ -2,7 +2,7 @@
 
 GPIO_TypeDef *PR_Init_CLK(t_GPIO_TYPE type);
 GPIO_TypeDef *PR_GetGPIOx_byType(t_GPIO_TYPE type);
-t_GPIO_MODE PR_getGPIOmode(GPIO_TypeDef* GPIOx, uint16_t pin);
+TM_GPIO_Mode_t PR_getGPIOmode(GPIO_TypeDef* GPIOx, uint16_t pin);
 
 void PR_GPIOs_Init()
 {
@@ -14,24 +14,42 @@ void PR_GPIOs_Init()
 	GPIO_TypeDef *GPIOx;
 
 	uint32_t tmp;
-	uint16_t gpio;
+	uint16_t GPIO_Pin;
 	for (int i = 0; i < len; i++) {
-		gpio = 1 << a_GPIOS[i].pin;
-		GPIOx = PR_Init_CLK(a_GPIOS[i].type);
-		/*Configure GPIO pin Output Level */
-		HAL_GPIO_WritePin(GPIOx, gpio, GPIO_PIN_RESET);
-
-		GPIO_InitStruct.Pin = gpio;
-		GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-		GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-
-		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;// 01
-//		GPIO_InitStruct.Mode = GPIO_MODE_INPUT; // 00
-//		GPIO_InitStruct.Mode = GPIO_MODE_ANALOG; // 11
-//		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP; // 10
-
-		HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
+		PR_GPIO_SetMode(&a_GPIOS[i], TM_GPIO_Mode_IN);
 	}
+}
+
+void PR_GPIO_SetMode(t_GPIO *gpio, TM_GPIO_Mode_t mode)
+{
+	uint16_t GPIO_Pin = 1 << gpio->pin;
+	GPIO_TypeDef *GPIOx = PR_Init_CLK(gpio->type);
+	/*Configure GPIO pin Output Level */
+	HAL_GPIO_WritePin(GPIOx, GPIO_Pin, GPIO_PIN_RESET);
+
+	GPIO_InitTypeDef GPIO_InitStruct = {0};
+	//	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;// 01
+	//	GPIO_InitStruct.Mode = GPIO_MODE_INPUT; // 00
+	//	GPIO_InitStruct.Mode = GPIO_MODE_ANALOG; // 11
+	//	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP; // 10
+
+	switch (mode) {
+		case TM_GPIO_Mode_IN:
+			GPIO_InitStruct.Mode = GPIO_MODE_INPUT; // 00
+			break;
+		case TM_GPIO_Mode_OUT:
+			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;// 01
+			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+			GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+			break;
+		default:
+			return;
+			break;
+	}
+
+	GPIO_InitStruct.Pin = GPIO_Pin;
+
+	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
 }
 
 GPIO_TypeDef *PR_Init_CLK(t_GPIO_TYPE type)
@@ -109,7 +127,7 @@ GPIO_TypeDef *PR_GetGPIOx_byType(t_GPIO_TYPE type)
 	return NULL;
 }
 
-t_GPIO_MODE PR_getGPIOmode(GPIO_TypeDef* GPIOx, uint16_t pin)
+TM_GPIO_Mode_t PR_getGPIOmode(GPIO_TypeDef* GPIOx, uint16_t pin)
 {
 	// for GPIO struct
 	//int n = 0;
@@ -123,13 +141,13 @@ t_GPIO_MODE PR_getGPIOmode(GPIO_TypeDef* GPIOx, uint16_t pin)
 
 GPIO_PinState PR_getGPIOvalue(GPIO_TypeDef* GPIOx, uint16_t pin)
 {
-	t_GPIO_MODE mode = PR_getGPIOmode(GPIOx, pin);
+	TM_GPIO_Mode_t mode = PR_getGPIOmode(GPIOx, pin);
 	uint16_t GPIO_Pin = 1 << pin;
 	switch (mode) {
-		case PR_GPIO_MODE_INPUT:
+		case TM_GPIO_Mode_IN:
 			return HAL_GPIO_ReadPin(GPIOx, 1 << pin);
 			break;
-		case PR_GPIO_MODE_OUTPUT:
+		case TM_GPIO_Mode_OUT:
 			return ((GPIOx->ODR & GPIO_Pin) != (uint32_t)GPIO_PIN_RESET)? GPIO_PIN_SET: GPIO_PIN_RESET;
 			break;
 		defualt:
