@@ -33,8 +33,7 @@ void *SR_runGpios()
 
 	int len = (sizeof(a_GPIOS) / sizeof(t_GPIO));
 	for (int i = 0; i < len; i++) {
-		print(a_GPIOS[i].name);
-		print("\n\r");
+		_printGPIOInfo(&a_GPIOS[i]);
 	}
 }
 
@@ -79,19 +78,19 @@ void *SR_runGpio()
 	// 2. get command
 	token = strtok(NULL, " ");
 	if (NULL == token) {
-		print("After GPIO name use commands like on/off/read/toggle \n\r");
+		_printGPIOInfo(gpio);
 		return NULL;
 	}
 	GPIO_TypeDef *GPIOx = PR_GetGPIOx_byType(gpio->type);
 
 	if (strcmp(token, "on") == 0) {
-		HAL_GPIO_WritePin(GPIOx, gpio->pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(GPIOx, 1 << gpio->pin, GPIO_PIN_SET);
 	} else if (strcmp(token, "off") == 0) {
-		HAL_GPIO_WritePin(GPIOx, gpio->pin, GPIO_PIN_RESET);
+		HAL_GPIO_WritePin(GPIOx, 1 << gpio->pin, GPIO_PIN_RESET);
 	} else if (strcmp(token, "toggle") == 0) {
-		HAL_GPIO_TogglePin(GPIOx, gpio->pin);
+		HAL_GPIO_TogglePin(GPIOx, 1 << gpio->pin);
 	} else if (strcmp(token, "read") == 0) {
-		int state = HAL_GPIO_ReadPin(GPIOx, gpio->pin) == GPIO_PIN_SET? 1: 0;
+		int state = PR_getGPIOvalue(GPIOx, gpio->pin) == GPIO_PIN_SET? 1: 0;
 		print(state);
 		print("\n\r");
 	} else {
@@ -167,4 +166,39 @@ int *SR_getSerialStatus()
 void SR_setSerialStatus(int status)
 {
 	PR_UART_STATUS = status;
+}
+
+void _printGPIOInfo(t_GPIO *GPIO)
+{
+	uint16_t gpio;
+	GPIO_TypeDef *GPIOx;
+	t_GPIO_MODE mode;
+
+	gpio = 1 << GPIO->pin;
+	GPIOx = PR_Init_CLK(GPIO->type);
+	print(GPIO->name);
+	print("\t");
+	mode = PR_getGPIOmode(GPIOx, GPIO->pin);
+
+	GPIO_PinState value;
+	switch (mode) {
+		case PR_GPIO_MODE_INPUT:
+			print("INPUT\t");
+			print(PR_getGPIOvalue(GPIOx, GPIO->pin) == GPIO_PIN_SET? "ON": "OFF");
+			break;
+		case PR_GPIO_MODE_OUTPUT:
+			print("OUTPUT\t");
+			print(PR_getGPIOvalue(GPIOx, GPIO->pin) == GPIO_PIN_SET? "ON": "OFF");
+			break;
+		case PR_GPIO_MODE_ANALOG:
+			print("ANALOG\t");
+			break;
+		case PR_GPIO_MODE_ALTERNATIVE:
+			print("ALTERNATIVE\t");
+			break;
+		defualt:
+			print("UNKNOWN\t");
+			break;
+	}
+	print("\n\r");
 }
