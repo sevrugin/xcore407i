@@ -36,6 +36,7 @@ void PR_GPIO_SetMode(t_GPIO *gpio, TM_GPIO_Mode_t mode)
 	switch (mode) {
 		case TM_GPIO_Mode_IN:
 			GPIO_InitStruct.Mode = GPIO_MODE_INPUT; // 00
+			GPIO_InitStruct.Pull = GPIO_PULLUP;
 			break;
 		case TM_GPIO_Mode_OUT:
 			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;// 01
@@ -49,6 +50,7 @@ void PR_GPIO_SetMode(t_GPIO *gpio, TM_GPIO_Mode_t mode)
 
 	GPIO_InitStruct.Pin = GPIO_Pin;
 
+	//HAL_GPIO_DeInit(GPIOx, &GPIO_InitStruct);
 	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
 }
 
@@ -56,31 +58,49 @@ GPIO_TypeDef *PR_Init_CLK(t_GPIO_TYPE type)
 {
 	switch (type) {
 		case TYPE_GPIOA:
-			__HAL_RCC_GPIOA_CLK_ENABLE();
+			if (__HAL_RCC_GPIOA_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOA_CLK_ENABLE();
+			}
 			break;
 		case TYPE_GPIOB:
-			__HAL_RCC_GPIOB_CLK_ENABLE();
+			if (__HAL_RCC_GPIOB_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOB_CLK_ENABLE();
+			}
 			break;
 		case TYPE_GPIOC:
-			__HAL_RCC_GPIOC_CLK_ENABLE();
+			if (__HAL_RCC_GPIOC_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOC_CLK_ENABLE();
+			}
 			break;
 		case TYPE_GPIOD:
-			__HAL_RCC_GPIOD_CLK_ENABLE();
+			if (__HAL_RCC_GPIOD_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOD_CLK_ENABLE();
+			}
 			break;
 		case TYPE_GPIOE:
-			__HAL_RCC_GPIOE_CLK_ENABLE();
+			if (__HAL_RCC_GPIOE_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOE_CLK_ENABLE();
+			}
 			break;
 		case TYPE_GPIOF:
-			__HAL_RCC_GPIOF_CLK_ENABLE();
+			if (__HAL_RCC_GPIOF_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOF_CLK_ENABLE();
+			}
 			break;
 		case TYPE_GPIOG:
-			__HAL_RCC_GPIOG_CLK_ENABLE();
+			if (__HAL_RCC_GPIOG_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOG_CLK_ENABLE();
+			}
 			break;
 		case TYPE_GPIOH:
-			__HAL_RCC_GPIOH_CLK_ENABLE();
+			if (__HAL_RCC_GPIOH_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOH_CLK_ENABLE();
+			}
 			break;
 		case TYPE_GPIOI:
-			__HAL_RCC_GPIOI_CLK_ENABLE();
+			if (__HAL_RCC_GPIOI_IS_CLK_DISABLED()) {
+				__HAL_RCC_GPIOI_CLK_ENABLE();
+			}
 			break;
 		default:
 			break;

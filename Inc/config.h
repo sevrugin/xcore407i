@@ -2,6 +2,8 @@
 //#define __CONFIG_H
 #include "gpios.h"
 
+#define FW_VERSION 1;
+
 // STM32F407 free pins
 const t_GPIO a_GPIOS[] = {
 	{"PH2",  TYPE_GPIOH, 2},

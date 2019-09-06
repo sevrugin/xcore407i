@@ -19,8 +19,6 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#define FW_VERSION "v0.0.1"
-
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
@@ -56,7 +54,7 @@ UART_HandleTypeDef huart3;
 /* USER CODE BEGIN PV */
 #define MAXCLISTRING 200
 uint8_t rxBuffer; // where we store that one character that just came in
-uint8_t rxString[MAXCLISTRING]; // where we build our string from characters coming in
+uint8_t rxString[MAXCLISTRING], rxLastString[MAXCLISTRING]; // where we build our string from characters coming in
 int rxindex = 0; // index for going though rxString
 
 /* USER CODE END PV */
@@ -105,9 +103,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  PR_GPIOs_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  PR_GPIOs_Init();
+
   print("\n\r# > ");
   __HAL_UART_FLUSH_DRREGISTER(&huart3);
   HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
@@ -117,14 +116,14 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-//	  HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
-//	  HAL_Delay(500);
 	  if(huart3.RxXferCount == 0)
 	  {
 		  tolog(".");
 		  // HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
 		  HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
 	  }
+//	  HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2, HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_2));
+//	  HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -218,19 +217,16 @@ static void MX_GPIO_Init(void)
   GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2|GPIO_PIN_3, GPIO_PIN_RESET);
-
-  /*Configure GPIO pins : PH2 PH3 */
-  GPIO_InitStruct.Pin = GPIO_PIN_2|GPIO_PIN_3;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+  /*Configure GPIO pin : PE2 */
+  GPIO_InitStruct.Pin = GPIO_PIN_2;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  //HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
 }
 
@@ -254,7 +250,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		if (rxBuffer != '[') {
 			switch (rxBuffer) {
 				case 'A':
+					for (; rxindex > 0; rxindex--) {
+						print("\b \b");
+					}
 					// code for arrow up
+					memcpy(rxString, rxLastString, MAXCLISTRING);
+					rxindex = strlen(rxString);
+					print(rxString);
 					break;
 				case 'B':
 					// code for arrow down
@@ -278,15 +280,21 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		rxString[rxindex] = 0;
 	} else if (rxBuffer == '\n' || rxBuffer == '\r') { // If Enter
 		print("\n\r");
+		memcpy(rxLastString, rxString, MAXCLISTRING);
+
 		SR_execCommand(rxString);
-		rxString[rxindex] = 0;
-		rxindex = 0;
+
 		for (int i = 0; i < MAXCLISTRING; i++) {
 			rxString[i] = 0; // Clear the string buffer
 		}
+
+		rxString[rxindex] = 0;
+		rxindex = 0;
+
 		if (SR_getSerialStatus() != UART_STATUS_LOGS) {
 			print("\n\r# > ");
 		}
+
 	} else if (isprint(rxBuffer)){
 		print(&rxBuffer); // Echo the character that caused this callback so the user can see what they are typing
 

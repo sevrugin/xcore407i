@@ -94,10 +94,10 @@ void *SR_runGpio()
 		print(state);
 		print("\n\r");
 	} else if (strcmp(token, "mode") == 0) {
-		char *mode = strcmp(token, "mode");
-		if (strcmp(mode, 'input') == 0) {
+		token = strtok(NULL, " ");
+		if (strcmp(token, "input") == 0) {
 			PR_GPIO_SetMode(gpio, TM_GPIO_Mode_IN);
-		} else if (strcmp(mode, 'output') == 0) {
+		} else if (strcmp(token, "output") == 0) {
 			PR_GPIO_SetMode(gpio, TM_GPIO_Mode_OUT);
 		} else {
 			print("To switch pin mode use (input/output)\n\r");
@@ -193,11 +193,11 @@ void _printGPIOInfo(t_GPIO *GPIO)
 	switch (mode) {
 		case TM_GPIO_Mode_IN:
 			print("INPUT\t");
-			print(PR_getGPIOvalue(GPIOx, GPIO->pin) == GPIO_PIN_SET? "ON": "OFF");
+			print(PR_getGPIOvalue(GPIOx, GPIO->pin) == GPIO_PIN_SET? "HIGH": "LOW");
 			break;
 		case TM_GPIO_Mode_OUT:
 			print("OUTPUT\t");
-			print(PR_getGPIOvalue(GPIOx, GPIO->pin) == GPIO_PIN_SET? "ON": "OFF");
+			print(PR_getGPIOvalue(GPIOx, GPIO->pin) == GPIO_PIN_SET? "HIGH": "LOW");
 			break;
 		case TM_GPIO_Mode_AN:
 			print("ANALOG\t");
