@@ -1,11 +1,11 @@
-//#ifndef __CONFIG_H
-//#define __CONFIG_H
+#ifndef __CONFIG_H
+#define __CONFIG_H
 #include "gpios.h"
 
 #define FW_VERSION 1;
 
 // STM32F407 free pins
-const t_GPIO a_GPIOS[] = {
+const t_GPIO _a_GPIOS[] = {
 	{"PH2",  TYPE_GPIOH, 2},
 	{"PH3",  TYPE_GPIOH, 3},
 
@@ -19,4 +19,4 @@ const t_GPIO a_GPIOS[] = {
 	{"PE6",  TYPE_GPIOE, 6}
 };
 
-//#endif
+#endif

@@ -1,21 +1,15 @@
 #include "gpios.h"
 
+
 GPIO_TypeDef *PR_Init_CLK(t_GPIO_TYPE type);
 GPIO_TypeDef *PR_GetGPIOx_byType(t_GPIO_TYPE type);
 TM_GPIO_Mode_t PR_getGPIOmode(GPIO_TypeDef* GPIOx, uint16_t pin);
+extern t_GPIO *a_GPIOS;
+extern uint16_t GPIOS_COUNT;
 
 void PR_GPIOs_Init()
 {
-	#include "config.h"
-
-	GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-	int len = (sizeof(a_GPIOS) / sizeof(t_GPIO));
-	GPIO_TypeDef *GPIOx;
-
-	uint32_t tmp;
-	uint16_t GPIO_Pin;
-	for (int i = 0; i < len; i++) {
+	for (int i = 0; i < GPIOS_COUNT; i++) {
 		PR_GPIO_SetMode(&a_GPIOS[i], TM_GPIO_Mode_IN);
 	}
 }
@@ -50,7 +44,6 @@ void PR_GPIO_SetMode(t_GPIO *gpio, TM_GPIO_Mode_t mode)
 
 	GPIO_InitStruct.Pin = GPIO_Pin;
 
-	//HAL_GPIO_DeInit(GPIOx, &GPIO_InitStruct);
 	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
 }
 
@@ -174,4 +167,5 @@ GPIO_PinState PR_getGPIOvalue(GPIO_TypeDef* GPIOx, uint16_t pin)
 			break;
 	}
 
+	return HAL_GPIO_ReadPin(GPIOx, 1 << pin);
 }

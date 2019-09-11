@@ -9,6 +9,12 @@
 #include <string.h>
 #include <stddef.h>
 
+typedef struct {
+	char *name;
+	char *description;
+	void (*run)();
+} t_Command;
+
 void executeSerialCommand(char *str);
 
 #endif

@@ -23,11 +23,14 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "config.h"
+const uint16_t GPIOS_COUNT = (sizeof(_a_GPIOS)/sizeof(t_GPIO));
+t_GPIO *a_GPIOS = _a_GPIOS;
+
 #include "defines.h"
 #include "serial.h"
 #include "gpios.h"
-
-#include "config.h"
+#include "Model/Button.h"
 
 //#include "Model/Button.h"
 
@@ -56,6 +59,9 @@ UART_HandleTypeDef huart3;
 uint8_t rxBuffer; // where we store that one character that just came in
 uint8_t rxString[MAXCLISTRING], rxLastString[MAXCLISTRING]; // where we build our string from characters coming in
 int rxindex = 0; // index for going though rxString
+
+t_Button *PR_buttons;
+uint16_t PR_Buttons_count = 0;
 
 /* USER CODE END PV */
 
@@ -106,6 +112,7 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   PR_GPIOs_Init();
+  PR_Buttons_Init(&PR_buttons, &PR_Buttons_count);
 
   print("\n\r# > ");
   __HAL_UART_FLUSH_DRREGISTER(&huart3);

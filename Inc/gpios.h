@@ -22,7 +22,7 @@ typedef enum {
 	TYPE_GPIOI=9
 } t_GPIO_TYPE;
 
-typedef struct t_GPIO {
+typedef struct s_GPIO {
 	char *name;
 	t_GPIO_TYPE type;
 	uint16_t pin;

@@ -52,6 +52,7 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+char *getFwVersion();
 
 /* USER CODE BEGIN EFP */
 

@@ -1,12 +1,13 @@
 #include "serial.h"
 #include "gpios.h"
+#include "Model/Button.h"
 
-typedef struct {
-	char *name;
-	char *description;
-	void (*run)();
-} t_Command;
+extern t_Button *PR_buttons;
+extern uint16_t PR_Buttons_count;
+extern t_GPIO *a_GPIOS;
+extern uint16_t GPIOS_COUNT;
 
+void *SR_runButtons();
 void *SR_runGpios();
 void *SR_runGpio();
 void *SR_runLogs();
@@ -18,6 +19,7 @@ int *SR_getSerialStatus();
 void SR_setSerialStatus(int status);
 
 t_Command commands[] = {
+		{name: "buttons", description: "Show list of all Buttons", run: &SR_runButtons},
 		{name: "gpios", description: "Show list of exists GPIO pins", run: &SR_runGpios},
 		{name: "gpio", description: "Working with current PIN (on/off/toggle/read/mode)", run: &SR_runGpio},
 		{name: "logs", description: "Switch to the 'logs' mode", run: &SR_runLogs},
@@ -27,12 +29,19 @@ t_Command commands[] = {
 
 #define NKEYS (sizeof(commands)/sizeof(t_Command))
 
+void *SR_runButtons()
+{
+	t_Button *b;
+	for (int i = 0; i < PR_Buttons_count; i++) {
+		b = &PR_buttons[i];
+		_printButtonInfo(b);
+	}
+}
+
+
 void *SR_runGpios()
 {
-	#include "config.h"
-
-	int len = (sizeof(a_GPIOS) / sizeof(t_GPIO));
-	for (int i = 0; i < len; i++) {
+	for (int i = 0; i < GPIOS_COUNT; i++) {
 		_printGPIOInfo(&a_GPIOS[i]);
 	}
 }
@@ -49,8 +58,6 @@ void *SR_runLogs()
  */
 void *SR_runGpio()
 {
-	#include "config.h"
-
 	// 2: pin name
 	char *token;
 	token = strtok(NULL, " ");
@@ -58,10 +65,9 @@ void *SR_runGpio()
 		print("Provide GPIO name (e.g. 'PH1') after command \n\r");
 		return NULL;
 	}
-	t_GPIO *gpio = NULL;
+	t_GPIO *gpio;
 
-	int len = (sizeof(a_GPIOS) / sizeof(t_GPIO));
-	for (int i = 0; i < len; i++) {
+	for (int i = 0; i < GPIOS_COUNT; i++) {
 		if (strcmp(token, a_GPIOS[i].name) == 0) {
 			gpio = &a_GPIOS[i];
 			break;
@@ -142,7 +148,7 @@ void *SR_runHelp(t_Command *self)
 void *SR_runVersion()
 {
 	print("Firmware version: ");
-	print(getFwVersion());
+	//print(FW_VERSION);
 	print("\n\r");
 }
 
@@ -209,5 +215,23 @@ void _printGPIOInfo(t_GPIO *GPIO)
 			print("UNKNOWN\t");
 			break;
 	}
+	print("\n\r");
+}
+
+void _printButtonInfo(t_Button *button)
+{
+	t_GPIO *gpio;
+
+	gpio = button->gpio;
+	GPIO_TypeDef *GPIOx;
+	GPIOx = PR_GetGPIOx_byType(gpio->type);
+
+	print(button->id);
+	print("\t");
+	print(button->name);
+	print("\t");
+	print(gpio->name);
+	print("\t");
+	print(PR_getGPIOvalue(GPIOx, gpio->pin) == GPIO_PIN_SET? "HIGH": "LOW");
 	print("\n\r");
 }
