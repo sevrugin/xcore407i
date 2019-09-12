@@ -125,12 +125,14 @@ int main(void)
   {
 	  if(huart3.RxXferCount == 0)
 	  {
-		  tolog(".");
 		  // HAL_GPIO_TogglePin(GPIOH, GPIO_PIN_2);
 		  HAL_UART_Receive_IT(&huart3, &rxBuffer, 1);
 	  }
+
+	  PR_Buttons_loop();
+
 //	  HAL_GPIO_WritePin(GPIOH, GPIO_PIN_2, HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_2));
-//	  HAL_Delay(500);
+	  HAL_Delay(10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -320,7 +322,7 @@ void print(char *str)
 	HAL_UART_Transmit(&huart3, (uint8_t*)str, strlen(str), 0xFFFF);
 }
 
-void tolog(char *str)
+void info(char *str)
 {
 	if (SR_getSerialStatus() == UART_STATUS_LOGS) {
 		print(str);

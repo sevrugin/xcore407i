@@ -158,7 +158,7 @@ GPIO_PinState PR_getGPIOvalue(GPIO_TypeDef* GPIOx, uint16_t pin)
 	uint16_t GPIO_Pin = 1 << pin;
 	switch (mode) {
 		case TM_GPIO_Mode_IN:
-			return HAL_GPIO_ReadPin(GPIOx, 1 << pin);
+			return HAL_GPIO_ReadPin(GPIOx, GPIO_Pin);
 			break;
 		case TM_GPIO_Mode_OUT:
 			return ((GPIOx->ODR & GPIO_Pin) != (uint32_t)GPIO_PIN_RESET)? GPIO_PIN_SET: GPIO_PIN_RESET;

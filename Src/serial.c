@@ -220,18 +220,12 @@ void _printGPIOInfo(t_GPIO *GPIO)
 
 void _printButtonInfo(t_Button *button)
 {
-	t_GPIO *gpio;
-
-	gpio = button->gpio;
-	GPIO_TypeDef *GPIOx;
-	GPIOx = PR_GetGPIOx_byType(gpio->type);
-
 	print(button->id);
 	print("\t");
 	print(button->name);
 	print("\t");
-	print(gpio->name);
+	print(button->gpio->name);
 	print("\t");
-	print(PR_getGPIOvalue(GPIOx, gpio->pin) == GPIO_PIN_SET? "HIGH": "LOW");
+	print(PR_Button_read(button) == GPIO_PIN_SET? "HIGH": "LOW");
 	print("\n\r");
 }
